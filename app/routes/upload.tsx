@@ -1,5 +1,6 @@
 import { prepareInstructions } from "constants/index";
 import { useState, type FormEvent } from "react"
+import { useNavigate } from "react-router";
 import FileUploader from "~/components/FileUploader";
 import Navbar from "~/components/Navbar"
 import { convertPdfToImage } from "~/lib/pdf2img";
@@ -11,6 +12,7 @@ const upload = () => {
     const [statusText,setStatusText] = useState('');
     const[file,setFile] = useState<File | null>(null); 
     const {auth,isLoading,ai,kv,fs} = usePuterStore();
+    const navigate = useNavigate();
 
     const handleFileSelect = (file:File | null) => {
         setFile(file);
@@ -49,7 +51,7 @@ const upload = () => {
         if(!imageFile){
             return setStatusText('Error: Failed to convert to pdf to image')
         }
-        
+
         setStatusText('Uploading the image')
         let uploadImage = null;
 
@@ -79,7 +81,7 @@ const upload = () => {
 
         const feedback = await ai.feedback(
             uploadFile.path,
-            prepareInstructions(jobTitle,jobDescription),
+            prepareInstructions({jobTitle,jobDescription}),
         )
         if(!feedback){
             return setStatusText('Error: Failed to analyze resume')
@@ -93,9 +95,10 @@ const upload = () => {
         setStatusText('Analysis completed, redirecting...')
         console.log(data);
         
+        navigate(`/resume/${uuid}`)
     }
   return (
-    <main className="bg-[url('/images.bg-main.svg')] bg-cover">
+    <main className="bg-[url('public/images/bg-main.svg')] bg-cover">
     <Navbar/>
     <section className="main-section">
         <div className="page-heading">
