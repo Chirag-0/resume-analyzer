@@ -7,11 +7,32 @@ import { convertPdfToImage } from "~/lib/pdf2img";
 import { usePuterStore } from "~/lib/puter";
 import { generateUUID } from "~/lib/utils";
 
+// Define the shape of the custom API error object
+interface CustomApiError {
+  success: boolean;
+  error: {
+    delegate: string;
+    message: string;
+    code: string;
+  };
+}
+
+// A type guard to check if an object matches the CustomApiError interface
+function isCustomApiError(obj: any): obj is CustomApiError {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'success' in obj &&
+    'error' in obj &&
+    typeof obj.error.message === 'string'
+  );
+}
+
 const upload = () => {
     const [isProcessing,setIsProcessing] = useState(false);
     const [statusText,setStatusText] = useState('');
     const[file,setFile] = useState<File | null>(null); 
-    const {auth,isLoading,ai,kv,fs} = usePuterStore();
+    const {ai,kv,fs} = usePuterStore();
     const navigate = useNavigate();
 
     const handleFileSelect = (file:File | null) => {
@@ -72,33 +93,57 @@ const upload = () => {
             id: uuid,
             resumePath: uploadFile.path,
             imagePath: uploadImage.path,
-            companyName,jobTitle,jobDescription,feedback:'',
+            companyName,jobTitle,jobDescription,
+            feedback:'',
         }
         
         await kv.set(`resume:${uuid}`, JSON.stringify(data));
 
         setStatusText('Analyzing...');
-
+        
+        try{
         const feedback = await ai.feedback(
             uploadFile.path,
             prepareInstructions({jobTitle,jobDescription}),
         )
-        if(!feedback){
+
+         if(!feedback){
             return setStatusText('Error: Failed to analyze resume')
         }
 
         const feedbackText = typeof feedback.message.content === 'string' ?
         feedback.message.content : feedback.message.content[0].text;
-
-        data.feedback = JSON.parse(feedbackText);
+         try{
+            data.feedback = JSON.parse(feedbackText);
+        }catch{
+            data.feedback = feedbackText;
+        }
         await kv.set(`resume:${uuid}`,JSON.stringify(data));
-        setStatusText('Analysis completed, redirecting...')
-        console.log(data);
+         setStatusText('Analysis completed, redirecting...')
+        // console.log(data);
         
         navigate(`/resume/${uuid}`)
+        }catch(e){
+            if (e instanceof Error) {
+                console.error('An unexpected error occurred:', e.message);
+            } else if(isCustomApiError(e)){
+                // Handle cases where the error is not a standard Error object
+                console.error('An API error occurred:', e.error.message);
+                setStatusText("Limit exceed try after some time");
+            }else{
+                console.error('An unknown error occurred:', e);
+            } 
+        }
+
+
+        
+       
+       
+       
     }
+
   return (
-    <main className="bg-[url('public/images/bg-main.svg')] bg-cover">
+    <main className="bg-[url('/images/bg-main.svg')] bg-cover">
     <Navbar/>
     <section className="main-section">
         <div className="page-heading">
@@ -134,7 +179,7 @@ const upload = () => {
 
                     <div className="form-div">
                         <label htmlFor="uploader">Upload Resume</label>
-                        <FileUploader onFileSelect={handleFileSelect}/>
+                        <FileUploader file={file} onFileSelect={handleFileSelect}/>
                     </div>
                     <button className="primary-button">Analyze Resume</button>
                 </form>

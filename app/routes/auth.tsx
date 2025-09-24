@@ -19,7 +19,8 @@ const auth = () => {
         if(auth.isAuthenticated) {
             navigate(next);
         }
-    },[auth.isAuthenticated,next])
+    }, [auth.isAuthenticated, location, navigate]);
+
 
   return (
     <main className="bg-[url('public/images/bg-main.svg')] bg-cover min-h-screen flex items-center justify-center">

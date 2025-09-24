@@ -333,24 +333,30 @@ export const usePuterStore = create<PuterStore>((set, get) => {
       setError("Puter.js not available");
       return;
     }
+   
+   try{ 
    return puter.ai.chat(
-            [
-                {
-                    role: "user",
-                    content: [
-                        {
-                            type: "file",
-                            puter_path: path,
-                        },
-                        {
-                            type: "text",
-                            text: message,
-                        },
-                    ],
-                },
-            ],
-            { model: "claude-3-7-sonnet" }
-        ) as Promise<AIResponse | undefined>;
+              [
+                  {
+                      role: "user",
+                      content: [
+                          {
+                              type: "file",
+                              puter_path: path,
+                          },
+                          {
+                              type: "text",
+                              text: message,
+                          },
+                      ],
+                  },
+              ],
+              { model: "claude-3-7-sonnet" }
+          ) as Promise<AIResponse | undefined>;
+        }catch(error){
+            console.log(error);   
+        }
+
   };
 
   const img2txt = async (image: string | File | Blob, testMode?: boolean) => {

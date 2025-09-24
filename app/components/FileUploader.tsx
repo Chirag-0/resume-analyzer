@@ -3,10 +3,11 @@ import {useDropzone} from 'react-dropzone'
 import {formatSize} from 'app/lib/utils';
 
 interface FileUploaderProps{
+    file: File | null;
     onFileSelect?: (file: File | null) => void
 }
 
-const FileUploader = ({onFileSelect}: FileUploaderProps) => {
+const FileUploader = ({file,onFileSelect}: FileUploaderProps) => {
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Do something with the files
@@ -23,7 +24,7 @@ const FileUploader = ({onFileSelect}: FileUploaderProps) => {
     maxSize: maxFileSize,
   })
 
-  const file = acceptedFiles[0] || null;
+//   const file = acceptedFiles[0] || null;
 
   return (
     <div className='w-full gradient-border '>
@@ -44,10 +45,17 @@ const FileUploader = ({onFileSelect}: FileUploaderProps) => {
                                     </p>
                                </div>
                             </div>
-                            <button className='p-2 cursor-pointer' onClick={
-                                (e)=>{onFileSelect?.(null)}}
+                          
+                            <button
+                                className="p-2 cursor-pointer"
+                                onClick={(e) => {
+                                onFileSelect?.(null)}}
                             >
-                                <img src="/icons/cross.svg" alt="remove" className='h-4 w-4 '/>
+                                <img
+                                src="/icons/cross.svg"
+                                alt="remove"
+                                className="h-4 w-4"
+                                />
                             </button>
                     </div>
                 ): (
