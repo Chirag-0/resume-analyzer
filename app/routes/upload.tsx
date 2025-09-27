@@ -49,10 +49,6 @@ const upload = () => {
         const jobDescription = formData.get('job-description') as string;
         const jobTitle = formData.get('job-title') as string;
 
-        console.log({
-            companyName,jobDescription,jobTitle,file
-        });
-
         if(!file) return;
 
         handleAnalyze({companyName,jobDescription,jobTitle,file});
@@ -78,7 +74,6 @@ const upload = () => {
 
         if (imageFile.file) {
         uploadImage = await fs.upload([imageFile.file]);
-        // console.log(uploadImage);
         } else {
         console.error("No file selected");
         }
@@ -120,7 +115,6 @@ const upload = () => {
         }
         await kv.set(`resume:${uuid}`,JSON.stringify(data));
          setStatusText('Analysis completed, redirecting...')
-        // console.log(data);
         
         navigate(`/resume/${uuid}`)
         }catch(e){
